@@ -16,6 +16,7 @@
     "eslint": "8.42.0",
     "eslint-config-next": "13.4.4",
     "ethereumjs-util": "^7.1.5",
+    "ethers": "^6.4.2",
     "next": "13.4.4",
     "postcss": "8.4.24",
     "react": "18.2.0",
@@ -26,5 +27,9 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.14.195"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.7",
+    "utf-8-validate": "^5.0.10"
   }
 }
