@@ -47,14 +47,14 @@ export default function WalletPage({
     };
 
     return (
-        <div className="bg-gray-200 dark:bg-gray-800 shadow p-6 relative">
+        <div className="shadow p-6 relative">
             <h1 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Your ETH Wallet</h1>
             <p className="text-green-500 mt-4 flex">
                 <span className="font-semibold text-gray-800 dark:text-white mr-1">Network:</span>
                 <span>{NETWORK_NAME}</span>
             </p>
             <p className="text-green-500 mt-4 flex">
-                <span className="font-semibold text-gray-800 dark:text-white mr-1">ETH Public Key:</span>
+                <span className="font-semibold text-gray-800 dark:text-white mr-1">Wallet Address:</span>
                 <span className="truncate block cursor-pointer" onClick={copyToClipboard}>{walletAddress}</span>
             </p>
             {isCopyNotificationVisible && (

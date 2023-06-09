@@ -30,8 +30,8 @@ export default function ContractLogin ({setContractAddress} : {setContractAddres
     };
 
     return (
-        <div className="flex items-center justify-center h-screen">
-            <div className="max-w-xl w-full bg-gray-200 dark:bg-gray-800 shadow rounded-lg p-8 space-y-6">
+        <div className="flex justify-center">
+            <div className="max-w-xl w-full shadow rounded-lg p-8 space-y-6">
                 <form onSubmit={handleSubmit(onSubmitLogin)} className="space-y-4">
                     <div className="mb-4">
                         <label htmlFor="contractAddress" className="block font-semibold text-gray-800 dark:text-white">
@@ -47,14 +47,16 @@ export default function ContractLogin ({setContractAddress} : {setContractAddres
                             {...register('contractAddress', { required: true, validate: ethereumAddressValidator })}
                             onChange={handleChangeContractAddress}
                         />
-                        {errors.contractAddress && <p className="text-red-500 mt-2">Private Key is not valid.</p>}
+                        {errors.contractAddress && <p className="text-red-500 mt-2">Contract Address is not valid.</p>}
                     </div>
-                    <button
-                        type="submit"
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded font-semibold"
-                    >
-                        Add
-                    </button>
+                    <div className="flex justify-center">
+                        <button
+                            type="submit"
+                            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded font-semibold"
+                        >
+                            Add
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>

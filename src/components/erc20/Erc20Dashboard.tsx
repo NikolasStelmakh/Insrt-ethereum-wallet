@@ -12,7 +12,7 @@ export default function Erc20Dashboard({walletAddress, walletPrivateKey}: {walle
 
     return (
         <div>
-            <h1 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">ERC-20 Section</h1>
+            <h1 className="text-2xl font-bold mt-4 text-gray-800 dark:text-white flex justify-center">ERC-20 Section</h1>
             {(contractAddress === '') && <ContractLogin setContractAddress={setContractAddress} />}
             {contractAddress?.length &&
                 <ErcTransfer
