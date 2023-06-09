@@ -1,6 +1,6 @@
 import {useForm} from "react-hook-form";
 import React, {ChangeEvent} from "react";
-import {STORED_KEY_NAME} from "@/utils/localstorage";
+import {STORED_ETH_PRIVATE_KEY_NAME} from "@/utils/localstorage";
 import {ethereumPrivateKeyValidator} from "@/utils/ethers";
 
 interface PrivateKeyFormData {
@@ -25,7 +25,7 @@ export default function WalletLogin ({setEthPrivateKey} : {setEthPrivateKey: (va
 
     const onSubmitLogin = (data: PrivateKeyFormData) => {
         setEthPrivateKey(data.privateKey);
-        localStorage.setItem(STORED_KEY_NAME, data.privateKey);
+        localStorage.setItem(STORED_ETH_PRIVATE_KEY_NAME, data.privateKey);
         reset();
     };
 

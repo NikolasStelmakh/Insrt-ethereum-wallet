@@ -14,7 +14,7 @@ export default function Page() {
     return (
         <div>
             {(ethPrivateKey === '') && <LoginPage setEthPrivateKey={setEthPrivateKey} />}
-            {ethPrivateKey?.length && <WalletPage setEthPrivateKey={setEthPrivateKey} ethPrivateKey={ethPrivateKey} />}
+            {ethPrivateKey?.length && <WalletPage setEthPrivateKey={setEthPrivateKey} walletPrivateKey={ethPrivateKey} />}
         </div>
     );
 }

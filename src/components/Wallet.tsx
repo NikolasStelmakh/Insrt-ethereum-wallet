@@ -1,60 +1,63 @@
 import React, { useEffect, useState } from "react";
-import { exportPublicKeyFromPrivate, getEthBalance } from "@/utils/ethers";
-import { STORED_KEY_NAME } from "@/utils/localstorage";
+import {getAddressFromPrivateKey, getEthBalance, NETWORK_NAME} from "@/utils/ethers";
+import { STORED_ETH_PRIVATE_KEY_NAME } from "@/utils/localstorage";
+import Erc20Dashboard from "@/components/erc20/Erc20Dashboard";
 
 export default function WalletPage({
-                                       ethPrivateKey,
-                                       setEthPrivateKey
-                                   }: {
-    ethPrivateKey: string | null;
+    walletPrivateKey,
+    setEthPrivateKey
+}: {
+    walletPrivateKey: string;
     setEthPrivateKey: (val: string | null) => void;
 }) {
-    const [ethPublicKey, setEthPublicKey] = useState<string | null>(null);
+    const [walletAddress, setWalletAddress] = useState<string | null>(null);
     const [walletBalance, setWalletBalance] = useState<string | null>(null);
-    const [copyNotification, setCopyNotification] = useState<boolean>(false);
+    const [isCopyNotificationVisible, setIsCopyNotificationVisible] = useState<boolean>(false);
 
     useEffect(() => {
-        setEthPublicKey(ethPrivateKey ? exportPublicKeyFromPrivate(ethPrivateKey) : null);
+        setWalletAddress(walletPrivateKey ? getAddressFromPrivateKey(walletPrivateKey) : null);
 
         const getBalance = async () => {
-            if (ethPrivateKey) {
-                const balance = await getEthBalance(ethPrivateKey);
+            if (walletPrivateKey) {
+                const balance = await getEthBalance(walletPrivateKey);
                 setWalletBalance(balance);
             }
         };
 
-        if (ethPrivateKey?.length) {
+        if (walletPrivateKey?.length) {
             getBalance();
         } else {
             setWalletBalance(null);
         }
-    }, [ethPrivateKey]);
+    }, [walletPrivateKey]);
 
     const copyToClipboard = () => {
-        if (ethPublicKey) {
-            navigator.clipboard.writeText(ethPublicKey);
-            setCopyNotification(true);
+        if (walletAddress) {
+            navigator.clipboard.writeText(walletAddress);
+            setIsCopyNotificationVisible(true);
             setTimeout(() => {
-                setCopyNotification(false);
+                setIsCopyNotificationVisible(false);
             }, 2000);
         }
     };
 
     const clearPrivateKey = () => {
         setEthPrivateKey("");
-        localStorage.removeItem(STORED_KEY_NAME);
+        localStorage.removeItem(STORED_ETH_PRIVATE_KEY_NAME);
     };
 
     return (
         <div className="bg-gray-200 dark:bg-gray-800 shadow p-6 relative">
             <h1 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Your ETH Wallet</h1>
             <p className="text-green-500 mt-4 flex">
-                <span className="font-semibold text-gray-800 dark:text-white mr-1">ETH Public Key:</span>
-                <span className="truncate block cursor-pointer" onClick={copyToClipboard}>
-          {ethPublicKey}
-        </span>
+                <span className="font-semibold text-gray-800 dark:text-white mr-1">Network:</span>
+                <span>{NETWORK_NAME}</span>
             </p>
-            {copyNotification && (
+            <p className="text-green-500 mt-4 flex">
+                <span className="font-semibold text-gray-800 dark:text-white mr-1">ETH Public Key:</span>
+                <span className="truncate block cursor-pointer" onClick={copyToClipboard}>{walletAddress}</span>
+            </p>
+            {isCopyNotificationVisible && (
                 <p className="text-sm text-gray-500 absolute top-14 left-1/4">Copied to clipboard!</p>
             )}
             <p className="text-green-500 mt-4 flex">
@@ -67,6 +70,8 @@ export default function WalletPage({
             >
                 Logout
             </button>
+
+            {walletAddress && <Erc20Dashboard walletPrivateKey={walletPrivateKey} walletAddress={walletAddress}/>}
         </div>
     );
 }

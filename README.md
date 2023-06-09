@@ -14,4 +14,9 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser.
 
-For test purposes that private key can be used: `d1d86ebd441b2a677ddcacbdcc3c72118ee13470c5755672bef82aaeac368d98`
+For test purposes, can be used (but if you want, you can use your own as well): 
+1. Wallet private key: `d1d86ebd441b2a677ddcacbdcc3c72118ee13470c5755672bef82aaeac368d98`
+2. ChainLink Token (LINK) ERC-20 contract address: `0x326C977E6efc84E512bB9C30f76E30c160eD06FB`
+
+Net (testnet) used: `Goerli` .
+Data you provide via forms, stored to localstorage.
