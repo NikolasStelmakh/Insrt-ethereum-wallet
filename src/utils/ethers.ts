@@ -1,4 +1,4 @@
-import {isValidPrivate, isValidAddress, privateToAddress, toChecksumAddress} from "ethereumjs-util";
+import {isValidPrivate, privateToAddress, toChecksumAddress} from "ethereumjs-util";
 import {ethers} from "ethers";
 import {evaluate} from 'mathjs'
 
@@ -9,14 +9,6 @@ export const NETWORK_NAME = process.env.ETHERSCAN_API_KEY || 'goerli'
 export const ethereumPrivateKeyValidator = (value: string): boolean => {
     try {
         return isValidPrivate(Buffer.from(value, 'hex'));
-    } catch (error) {
-        return false;
-    }
-};
-
-export const ethereumAddressValidator = (value: string): boolean => {
-    try {
-        return isValidAddress(value);
     } catch (error) {
         return false;
     }
@@ -99,5 +91,51 @@ export const convertNativeToETH = (balance: string, decimalFactor: string): stri
 
 export const convertETHToNative = (ethAmount: string, decimalFactor: string): string => {
     return evaluate(`${ethAmount} * 10 ^ ${decimalFactor}`)
+};
+
+export const sendTokens = async ({
+   contractInstance,
+   tokenDecimalFactor,
+   privateKey,
+   toAddress,
+   amount,
+   setProgress,
+} : {
+    contractInstance: ethers.Contract,
+    setProgress: (value: {message: string, link?: string}|null) => void,
+    tokenDecimalFactor: string,
+    privateKey: string,
+    toAddress: string,
+    amount: string
+}): Promise<any> => {
+    try {
+        const nativeAmount = ethers.parseUnits(amount, Number(tokenDecimalFactor));
+        const provider = new ethers.InfuraProvider(NETWORK_NAME, INFURA_API_KEY)
+        const signer = new ethers.Wallet(privateKey, provider);
+        const contractSigner = contractInstance.connect(signer)
+
+        // @ts-ignore
+        const tx = await contractSigner.transfer(toAddress, nativeAmount);
+
+        setProgress({
+            message: 'Mining transaction...',
+            link: `https://${NETWORK_NAME}.etherscan.io/tx/${tx.hash}`
+        });
+        console.log("Mining transaction...");
+        console.log(`https://${NETWORK_NAME}.etherscan.io/tx/${tx.hash}`);
+
+        // Waiting for the transaction to be mined
+        const receipt = await tx.wait();
+        // The transaction is now on chain!
+        setProgress({
+            message: `Mined in block ${receipt.blockNumber}`,
+            link: `https://${NETWORK_NAME}.etherscan.io/tx/${tx.hash}`
+        })
+        console.log(`Mined in block ${receipt.blockNumber}`);
+    } catch (error) {
+        console.error('Error sending tokens:', error);
+        setProgress({message: 'Error sending tokens: ' + JSON.stringify(error, null, 2)});
+        return null;
+    }
 };
 

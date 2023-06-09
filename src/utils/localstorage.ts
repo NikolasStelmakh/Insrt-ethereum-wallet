@@ -1,4 +1,5 @@
-import {ethereumAddressValidator, ethereumPrivateKeyValidator} from "@/utils/ethers";
+import {ethereumPrivateKeyValidator} from "@/utils/ethers";
+import {ethereumAddressValidator} from "@/utils/validators";
 
 export const STORED_ETH_PRIVATE_KEY_NAME = 'ethPrivateKey'
 

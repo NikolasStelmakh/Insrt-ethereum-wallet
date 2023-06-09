@@ -1,7 +1,7 @@
 import {useForm} from "react-hook-form";
 import React, {ChangeEvent} from "react";
 import {STORED_ETH_ERC20_ADDRESS} from "@/utils/localstorage";
-import {ethereumAddressValidator} from "@/utils/ethers";
+import {ethereumAddressValidator} from "@/utils/validators";
 
 interface ContractAddressFormData {
     contractAddress: string;

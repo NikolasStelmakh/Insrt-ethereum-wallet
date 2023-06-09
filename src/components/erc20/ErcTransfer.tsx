@@ -7,6 +7,7 @@ import {
 } from "@/utils/ethers";
 import {STORED_ETH_ERC20_ADDRESS} from "@/utils/localstorage";
 import {ethers} from "ethers";
+import SendERC20Tokens from "@/components/forms/SendERC20Tokens";
 
 export default function ErcTransfer({
     walletPrivateKey,
@@ -19,11 +20,13 @@ export default function ErcTransfer({
     contractAddress: string;
     setContractAddress: (val: string | null) => void;
 }) {
+    const [error, setError] = useState<string | null>(null);
+    const [isCopyNotificationVisible, setIsCopyNotificationVisible] = useState<boolean>(false);
+    // todo: refactor by useRef or interface
     const [contractInstance, setContractInstance] = useState<ethers.Contract | null>(null);
     const [tokensBalance, setTokensBalance] = useState<string | null>(null);
-    const [decimalFactor, setDecimalFactor] = useState<string | null>(null);
+    const [tokenDecimalFactor, setTokenDecimalFactor] = useState<string | null>(null);
     const [tokenSymbol, setTokenSymbol] = useState<string | null>(null);
-    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const initializeContractInstance = async () => {
@@ -37,7 +40,7 @@ export default function ErcTransfer({
                                 const balance = (await contractInstance.balanceOf(walletAddress)).toString();
                                 const decimalFactor = await getDecimalFactorOfTheContract(contractInstance);
                                 const tokenSymbol = await contractInstance.symbol();
-                                setDecimalFactor(decimalFactor);
+                                setTokenDecimalFactor(decimalFactor);
                                 setTokenSymbol(tokenSymbol);
                                 setTokensBalance(balance);
                                 setContractInstance(contractInstance);
@@ -69,15 +72,28 @@ export default function ErcTransfer({
         localStorage.removeItem(STORED_ETH_ERC20_ADDRESS);
     };
 
+    const copyToClipboard = () => {
+        if (contractAddress) {
+            navigator.clipboard.writeText(contractAddress);
+            setIsCopyNotificationVisible(true);
+            setTimeout(() => {
+                setIsCopyNotificationVisible(false);
+            }, 2000);
+        }
+    };
+
     return (
         <div className="shadow p-6 relative">
             <p className="text-green-500 mt-4 flex">
                 <span className="font-semibold text-gray-800 dark:text-white mr-1">Contract Address:</span>
-                <span className="truncate block">{contractAddress}</span>
+                <span className="truncate block cursor-pointer" onClick={copyToClipboard}>{contractAddress}</span>
             </p>
+            {isCopyNotificationVisible && (
+                <p className="text-sm text-gray-500 absolute top-5">Copied to clipboard!</p>
+            )}
             {!error && <p className="text-green-500 mt-4 flex">
                 <span className="font-semibold text-gray-800 dark:text-white mr-1">Balance:</span>
-                <span>{(tokensBalance && decimalFactor) ? `${convertNativeToETH(tokensBalance, decimalFactor)} ${tokenSymbol}` :
+                <span>{(tokensBalance && tokenDecimalFactor) ? `${convertNativeToETH(tokensBalance, tokenDecimalFactor)} ${tokenSymbol}` :
                     <span className="animate-pulse">Loading...</span>}</span>
             </p>}
             <button
@@ -88,8 +104,17 @@ export default function ErcTransfer({
             </button>
             {error && <p className="text-red-500 mt-4">{error}</p>}
 
-            {tokensBalance && <div>
-
+            {!error && tokensBalance && contractInstance && tokenDecimalFactor && tokenSymbol && <div>
+                <SendERC20Tokens
+                    walletPrivateKey={walletPrivateKey}
+                    contractInstance={contractInstance}
+                    balance={tokensBalance}
+                    tokenDecimalFactor={tokenDecimalFactor}
+                    tokenSymbol={tokenSymbol}
+                    contractAddress={contractAddress}
+                    walletAddress={walletAddress}
+                    setTokensBalance={setTokensBalance}
+                />
             </div>}
         </div>
     );

@@ -58,7 +58,7 @@ export default function WalletPage({
                 <span className="truncate block cursor-pointer" onClick={copyToClipboard}>{walletAddress}</span>
             </p>
             {isCopyNotificationVisible && (
-                <p className="text-sm text-gray-500 absolute top-14 left-1/4">Copied to clipboard!</p>
+                <p className="text-sm text-gray-500 absolute top-24">Copied to clipboard!</p>
             )}
             <p className="text-green-500 mt-4 flex">
                 <span className="font-semibold text-gray-800 dark:text-white mr-1">Balance:</span>
