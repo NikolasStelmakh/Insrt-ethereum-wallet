@@ -64,6 +64,19 @@ export default function WalletPage({
                 <span className="font-semibold text-gray-800 dark:text-white mr-1">Balance:</span>
                 <span>{walletBalance ? `${walletBalance} ETH` : <span className="animate-pulse">Loading...</span>}</span>
             </p>
+            <p className="text-green-500 mt-4 flex">
+                <span className="font-semibold text-gray-800 dark:text-white mr-1">Transactions history:</span>
+                <span>
+                    <a
+                        href={`https://${NETWORK_NAME}.etherscan.io/address/${walletAddress}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:underline block truncate"
+                    >
+                        {`https://${NETWORK_NAME}.etherscan.io/address/${walletAddress}`}
+                    </a>
+                </span>
+            </p>
             <button
                 onClick={clearPrivateKey}
                 className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded font-semibold mt-4"
