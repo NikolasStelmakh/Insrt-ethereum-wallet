@@ -30,7 +30,7 @@ export default function WalletLogin ({setEthPrivateKey} : {setEthPrivateKey: (va
     };
 
     return (
-        <div className="flex items-center justify-center h-screen">
+        <div className="flex items-center justify-center h-screen" data-testid="wallet-form">
             <div className="max-w-xl w-full shadow rounded-lg p-8 space-y-6">
                 <h1 className="text-2xl font-bold text-gray-800 dark:text-white flex justify-center">Wallet Login</h1>
                 <form onSubmit={handleSubmit(onSubmitLogin)} className="space-y-4">

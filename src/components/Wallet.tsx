@@ -47,7 +47,7 @@ export default function WalletPage({
     };
 
     return (
-        <div className="shadow p-6 relative">
+        <div className="shadow p-6 relative" data-testid="wallet-dashboard-container">
             <h1 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Your ETH Wallet</h1>
             <p className="text-green-500 mt-4 flex">
                 <span className="font-semibold text-gray-800 dark:text-white mr-1">Network:</span>

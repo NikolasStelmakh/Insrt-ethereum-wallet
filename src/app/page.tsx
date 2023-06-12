@@ -13,8 +13,8 @@ export default function Page() {
 
     return (
         <div>
-            {(ethPrivateKey === '') && <LoginPage setEthPrivateKey={setEthPrivateKey} />}
-            {ethPrivateKey?.length && <WalletPage setEthPrivateKey={setEthPrivateKey} walletPrivateKey={ethPrivateKey} />}
+            {(ethPrivateKey === '') && <LoginPage data-testid="login-page" setEthPrivateKey={setEthPrivateKey} />}
+            {ethPrivateKey?.length && <WalletPage data-testid="wallet-page" setEthPrivateKey={setEthPrivateKey} walletPrivateKey={ethPrivateKey} />}
         </div>
     );
 }
