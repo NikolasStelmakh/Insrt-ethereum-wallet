@@ -1,6 +1,6 @@
 import {useForm} from "react-hook-form";
 import React, {ChangeEvent} from "react";
-import {STORED_ETH_ERC20_ADDRESS} from "@/utils/localstorage";
+import {STORED_ETH_ERC20_CONTRACT_ADDRESS} from "@/utils/localstorage";
 import {ethereumAddressValidator} from "@/utils/validators";
 
 interface ContractAddressFormData {
@@ -25,7 +25,7 @@ export default function ContractLogin ({setContractAddress} : {setContractAddres
 
     const onSubmitLogin = (data: ContractAddressFormData) => {
         setContractAddress(data.contractAddress);
-        localStorage.setItem(STORED_ETH_ERC20_ADDRESS, data.contractAddress);
+        localStorage.setItem(STORED_ETH_ERC20_CONTRACT_ADDRESS, data.contractAddress);
         reset();
     };
 

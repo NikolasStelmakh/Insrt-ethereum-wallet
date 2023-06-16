@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {getStoredEthErc20Address} from "@/utils/localstorage";
+import {getStoredEthErc20ContractAddress} from "@/utils/localstorage";
 import ContractLogin from "@/components/forms/ContractLogin";
 import ErcTransfer from "@/components/erc20/ErcTransfer";
 
@@ -7,7 +7,7 @@ export default function Erc20Dashboard({walletAddress, walletPrivateKey}: {walle
     const [contractAddress, setContractAddress] = useState<string | null>(null);
 
     useEffect(() => {
-        setContractAddress(getStoredEthErc20Address());
+        setContractAddress(getStoredEthErc20ContractAddress());
     }, []);
 
     return (

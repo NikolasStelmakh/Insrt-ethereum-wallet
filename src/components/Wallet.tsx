@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
+import {useRouter} from "next/navigation";
 import {getAddressFromPrivateKey, getEthBalance, NETWORK_NAME} from "@/utils/ethers";
-import { STORED_ETH_PRIVATE_KEY_NAME } from "@/utils/localstorage";
+import { STORED_ETH_WALLET_PRIVATE_KEY_NAME } from "@/utils/localstorage";
 import Erc20Dashboard from "@/components/erc20/Erc20Dashboard";
 
 export default function WalletPage({
     walletPrivateKey,
-    setEthPrivateKey
 }: {
     walletPrivateKey: string;
-    setEthPrivateKey: (val: string | null) => void;
 }) {
+    const router = useRouter();
     const [walletAddress, setWalletAddress] = useState<string | null>(null);
     const [walletBalance, setWalletBalance] = useState<string | null>(null);
     const [isCopyNotificationVisible, setIsCopyNotificationVisible] = useState<boolean>(false);
@@ -42,8 +42,8 @@ export default function WalletPage({
     };
 
     const clearPrivateKey = () => {
-        setEthPrivateKey("");
-        localStorage.removeItem(STORED_ETH_PRIVATE_KEY_NAME);
+        localStorage.removeItem(STORED_ETH_WALLET_PRIVATE_KEY_NAME);
+        router.push('/auth/wallet');
     };
 
     return (

@@ -1,20 +1,27 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { getStoredEthPrivateKey } from "@/utils/localstorage";
-import LoginPage from "@/components/forms/WalletLogin";
+import {useRouter} from "next/navigation";
+import { getStoredWalletPrivateKey } from "@/utils/localstorage";
 import WalletPage from "@/components/Wallet";
 
 export default function Page() {
-    const [ethPrivateKey, setEthPrivateKey] = useState<string | null>(null);
+    const router = useRouter();
+    const [walletPrivateKey, setWalletPrivateKey] = useState<string | null>(null);
 
     useEffect(() => {
-        setEthPrivateKey(getStoredEthPrivateKey());
-    }, []);
+        if (!getStoredWalletPrivateKey()?.length) {
+            router.push('/auth/wallet')
+        } else setWalletPrivateKey(getStoredWalletPrivateKey());
+    }, [router]);
 
     return (
         <div>
-            {(ethPrivateKey === '') && <LoginPage data-testid="login-page" setEthPrivateKey={setEthPrivateKey} />}
-            {ethPrivateKey?.length && <WalletPage data-testid="wallet-page" setEthPrivateKey={setEthPrivateKey} walletPrivateKey={ethPrivateKey} />}
+            {walletPrivateKey?.length &&
+                <WalletPage
+                    data-testid="wallet-page"
+                    walletPrivateKey={walletPrivateKey}
+                />
+            }
         </div>
     );
 }

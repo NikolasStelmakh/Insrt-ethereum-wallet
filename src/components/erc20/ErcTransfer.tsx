@@ -5,7 +5,7 @@ import {
     convertNativeToETH,
     getDecimalFactorOfTheContract
 } from "@/utils/ethers";
-import {STORED_ETH_ERC20_ADDRESS} from "@/utils/localstorage";
+import {STORED_ETH_ERC20_CONTRACT_ADDRESS} from "@/utils/localstorage";
 import {ethers} from "ethers";
 import SendERC20Tokens from "@/components/forms/SendERC20Tokens";
 
@@ -69,7 +69,7 @@ export default function ErcTransfer({
 
     const clearContractAddress = () => {
         setContractAddress("");
-        localStorage.removeItem(STORED_ETH_ERC20_ADDRESS);
+        localStorage.removeItem(STORED_ETH_ERC20_CONTRACT_ADDRESS);
     };
 
     const copyToClipboard = () => {
