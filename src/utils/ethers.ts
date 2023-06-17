@@ -1,44 +1,11 @@
-import {isValidPrivate, privateToAddress, toChecksumAddress} from "ethereumjs-util";
-import {ethers} from "ethers";
+import {privateToAddress, toChecksumAddress} from "ethereumjs-util";
+import {ethers, InfuraProvider, Wallet} from "ethers";
 import {evaluate} from 'mathjs'
+import {ethereumPrivateKeyValidator} from "@/utils/validators";
 
 const INFURA_API_KEY = process.env.INFURA_API_KEY || 'b754d988619541978228c7b6921576bd';
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || 'HAJKRQURWBDPHYYR4FUM3EF6U3NWKT4A4S';
-export const NETWORK_NAME = process.env.ETHERSCAN_API_KEY || 'goerli'
-
-export const ethereumPrivateKeyValidator = (value: string): boolean => {
-    try {
-        return isValidPrivate(Buffer.from(value, 'hex'));
-    } catch (error) {
-        return false;
-    }
-};
-
-export const getAddressFromPrivateKey = (privateKey: string): string | null => {
-    try {
-        const privateKeyBuffer = Buffer.from(privateKey, 'hex')
-        const address: Buffer = privateToAddress(privateKeyBuffer)
-        return toChecksumAddress('0x' + address.toString('hex'))
-    } catch (error) {
-        console.error('Error deriving address from private key:', error);
-        return null;
-    }
-};
-
-export const getEthBalance = async (privateKey: string): Promise<string | null> => {
-    try {
-        const provider = new ethers.InfuraProvider(NETWORK_NAME, INFURA_API_KEY)
-        const wallet = new ethers.Wallet(privateKey, provider);
-        const address = await wallet.getAddress();
-        const balance = await provider.getBalance(address);
-
-        // WEI to ETH
-        return ethers.formatEther(balance);
-    } catch (error) {
-        console.error('Failed to get ETH balance', error);
-        return null;
-    }
-};
+export const NETWORK_NAME = process.env.ETHERSCAN_API_KEY || 'goerli';
 
 export const getContractABI = async (contractAddress: string): Promise<any | null> => {
     try {
@@ -93,49 +60,93 @@ export const convertETHToNative = (ethAmount: string, decimalFactor: string): st
     return evaluate(`${ethAmount} * 10 ^ ${decimalFactor}`)
 };
 
-export const sendTokens = async ({
-   contractInstance,
-   tokenDecimalFactor,
-   privateKey,
-   toAddress,
-   amount,
-   setProgress,
-} : {
-    contractInstance: ethers.Contract,
-    setProgress: (value: {message: string, link?: string}|null) => void,
-    tokenDecimalFactor: string,
-    privateKey: string,
-    toAddress: string,
-    amount: string
-}): Promise<any> => {
-    try {
-        const nativeAmount = ethers.parseUnits(amount, Number(tokenDecimalFactor));
-        const provider = new ethers.InfuraProvider(NETWORK_NAME, INFURA_API_KEY)
-        const signer = new ethers.Wallet(privateKey, provider);
-        const contractSigner = contractInstance.connect(signer)
-
-        // @ts-ignore
-        const tx = await contractSigner.transfer(toAddress, nativeAmount);
-
-        setProgress({
-            message: 'Mining transaction...',
-            link: `https://${NETWORK_NAME}.etherscan.io/tx/${tx.hash}`
-        });
-        console.log("Mining transaction...");
-        console.log(`https://${NETWORK_NAME}.etherscan.io/tx/${tx.hash}`);
-
-        // Waiting for the transaction to be mined
-        const receipt = await tx.wait();
-        // The transaction is now on chain!
-        setProgress({
-            message: `Mined in block ${receipt.blockNumber}`,
-            link: `https://${NETWORK_NAME}.etherscan.io/tx/${tx.hash}`
-        })
-        console.log(`Mined in block ${receipt.blockNumber}`);
-    } catch (error) {
-        console.error('Error sending tokens:', error);
-        setProgress({message: 'Error sending tokens: ' + JSON.stringify(error, null, 2)});
-        return null;
+export class WalletInstance {
+    private readonly privateKey: string;
+    public readonly provider: InfuraProvider;
+    public readonly signer: Wallet;
+    public balance: string | null; // ETH
+    public address: string;
+    constructor(privateKey: string) {
+        if (ethereumPrivateKeyValidator(privateKey)) {
+            this.privateKey = privateKey;
+            this.balance = null;
+            this.provider = new ethers.InfuraProvider(NETWORK_NAME, INFURA_API_KEY);
+            this.signer = new ethers.Wallet(privateKey, this.provider);
+            this.address = this.getAddress();
+        } else throw new Error('Wallet initialization: Private key validation error.')
     }
-};
 
+    public async getBalance(): Promise<string | null> {
+        try {
+            const address = await this.signer.getAddress();
+            const balance = await this.provider.getBalance(address);
+
+            // WEI to ETH
+            const balanceInETH = ethers.formatEther(balance)
+
+            this.balance = balanceInETH;
+            return balanceInETH;
+        } catch (error) {
+            console.error('Failed to get ETH balance', error);
+            return null;
+        }
+    };
+
+    public getAddress(): string {
+        try {
+            const privateKeyBuffer = Buffer.from(this.privateKey, 'hex')
+            const address: Buffer = privateToAddress(privateKeyBuffer)
+            const publicAddress: string = toChecksumAddress('0x' + address.toString('hex'));
+            this.address = publicAddress;
+            return publicAddress;
+        } catch (error) {
+            console.error('Error deriving address from private key:', error);
+            return '';
+        }
+    };
+
+    public async sendTokensWithContract({
+        contractInstance,
+        tokenDecimalFactor,
+        toAddress,
+        amount,
+        setProgress,
+    } : {
+        contractInstance: ethers.Contract,
+        setProgress: (value: {message: string, link?: string, isSuccess?: boolean, isError?: boolean} | null) => void,
+        tokenDecimalFactor: string,
+        toAddress: string,
+        amount: string
+    }):  Promise<void> {
+        try {
+            const nativeAmount = ethers.parseUnits(amount, Number(tokenDecimalFactor));
+            const contractSigner = contractInstance.connect(this.signer)
+
+            // @ts-ignore
+            const tx = await contractSigner.transfer(toAddress, nativeAmount);
+
+            setProgress({
+                message: 'Mining transaction...',
+                link: `https://${NETWORK_NAME}.etherscan.io/tx/${tx.hash}`,
+            });
+            console.log("Mining transaction...");
+            console.log(`https://${NETWORK_NAME}.etherscan.io/tx/${tx.hash}`);
+
+            // Waiting for the transaction to be mined
+            const receipt = await tx.wait();
+            // The transaction is now on chain!
+            setProgress({
+                message: `Mined in block ${receipt.blockNumber}`,
+                link: `https://${NETWORK_NAME}.etherscan.io/tx/${tx.hash}`,
+                isSuccess: true,
+            })
+            console.log(`Mined in block ${receipt.blockNumber}`);
+        } catch (error) {
+            console.error('Error sending tokens:', error);
+            setProgress({
+                message: 'Error sending tokens: ' + JSON.stringify(error, null, 2),
+                isError: true
+            });
+        }
+    }
+}

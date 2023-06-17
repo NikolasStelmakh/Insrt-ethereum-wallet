@@ -3,7 +3,7 @@ import {
     getContractABI,
     createContractInstance,
     convertNativeToETH,
-    getDecimalFactorOfTheContract
+    getDecimalFactorOfTheContract, WalletInstance
 } from "@/utils/ethers";
 import {STORED_ETH_ERC20_CONTRACT_ADDRESS} from "@/utils/localstorage";
 import {ethers} from "ethers";
@@ -13,16 +13,17 @@ export default function ErcTransfer({
     walletPrivateKey,
     walletAddress,
     contractAddress,
-    setContractAddress
+    setContractAddress,
+    walletInstance,
 }: {
     walletPrivateKey: string;
     walletAddress: string;
     contractAddress: string;
     setContractAddress: (val: string | null) => void;
+    walletInstance: WalletInstance;
 }) {
     const [error, setError] = useState<string | null>(null);
     const [isCopyNotificationVisible, setIsCopyNotificationVisible] = useState<boolean>(false);
-    // todo: refactor by useRef or interface
     const [contractInstance, setContractInstance] = useState<ethers.Contract | null>(null);
     const [tokensBalance, setTokensBalance] = useState<string | null>(null);
     const [tokenDecimalFactor, setTokenDecimalFactor] = useState<string | null>(null);
@@ -106,7 +107,7 @@ export default function ErcTransfer({
 
             {!error && tokensBalance && contractInstance && tokenDecimalFactor && tokenSymbol && <div>
                 <SendERC20Tokens
-                    walletPrivateKey={walletPrivateKey}
+                    walletInstance={walletInstance}
                     contractInstance={contractInstance}
                     balance={tokensBalance}
                     tokenDecimalFactor={tokenDecimalFactor}

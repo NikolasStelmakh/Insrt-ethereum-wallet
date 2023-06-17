@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {useRouter} from "next/navigation";
-import {getAddressFromPrivateKey, getEthBalance, NETWORK_NAME} from "@/utils/ethers";
+import {NETWORK_NAME, WalletInstance} from "@/utils/ethers";
 import { STORED_ETH_WALLET_PRIVATE_KEY_NAME } from "@/utils/localstorage";
 import Erc20Dashboard from "@/components/erc20/Erc20Dashboard";
 
@@ -10,24 +10,31 @@ export default function WalletPage({
     walletPrivateKey: string;
 }) {
     const router = useRouter();
+
+    const [walletInstance, setWalletInstance] = useState<WalletInstance | null>(null);
     const [walletAddress, setWalletAddress] = useState<string | null>(null);
     const [walletBalance, setWalletBalance] = useState<string | null>(null);
     const [isCopyNotificationVisible, setIsCopyNotificationVisible] = useState<boolean>(false);
 
     useEffect(() => {
-        setWalletAddress(walletPrivateKey ? getAddressFromPrivateKey(walletPrivateKey) : null);
-
-        const getBalance = async () => {
-            if (walletPrivateKey) {
-                const balance = await getEthBalance(walletPrivateKey);
+        const getWalletData = async () => {
+            try {
+                const wallet = new WalletInstance(walletPrivateKey);
+                setWalletInstance(wallet);
+                setWalletAddress(wallet.getAddress());
+                const balance = await wallet.getBalance();
                 setWalletBalance(balance);
+            } catch (e) {
+                console.log('Error while getting wallet data: ', JSON.stringify(e, null, 2));
             }
         };
 
         if (walletPrivateKey?.length) {
-            getBalance();
+            getWalletData();
         } else {
             setWalletBalance(null);
+            setWalletInstance(null);
+            setWalletAddress(null);
         }
     }, [walletPrivateKey]);
 
@@ -84,7 +91,13 @@ export default function WalletPage({
                 Logout
             </button>
 
-            {walletAddress && <Erc20Dashboard walletPrivateKey={walletPrivateKey} walletAddress={walletAddress}/>}
+            {walletAddress && walletInstance &&
+                <Erc20Dashboard
+                    walletPrivateKey={walletPrivateKey}
+                    walletAddress={walletAddress}
+                    walletInstance={walletInstance}
+                />
+            }
         </div>
     );
 }

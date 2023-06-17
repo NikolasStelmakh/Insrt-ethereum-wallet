@@ -2,8 +2,17 @@ import React, { useState, useEffect } from 'react';
 import {getStoredEthErc20ContractAddress} from "@/utils/localstorage";
 import ContractLogin from "@/components/forms/ContractLogin";
 import ErcTransfer from "@/components/erc20/ErcTransfer";
+import {WalletInstance} from "@/utils/ethers";
 
-export default function Erc20Dashboard({walletAddress, walletPrivateKey}: {walletAddress: string, walletPrivateKey: string}) {
+export default function Erc20Dashboard({
+    walletAddress,
+    walletPrivateKey,
+    walletInstance,
+}: {
+    walletAddress: string;
+    walletPrivateKey: string;
+    walletInstance: WalletInstance;
+}) {
     const [contractAddress, setContractAddress] = useState<string | null>(null);
 
     useEffect(() => {
@@ -16,6 +25,7 @@ export default function Erc20Dashboard({walletAddress, walletPrivateKey}: {walle
             {(contractAddress === '') && <ContractLogin setContractAddress={setContractAddress} />}
             {contractAddress?.length &&
                 <ErcTransfer
+                    walletInstance={walletInstance}
                     walletPrivateKey={walletPrivateKey}
                     walletAddress={walletAddress}
                     setContractAddress={setContractAddress}

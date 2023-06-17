@@ -1,7 +1,7 @@
 import {useForm} from "react-hook-form";
 import React, {ChangeEvent, useState} from "react";
 import {ethers} from "ethers";
-import {convertNativeToETH, getAddressFromPrivateKey, sendTokens} from "@/utils/ethers";
+import {convertNativeToETH, WalletInstance} from "@/utils/ethers";
 import {transferAddressValidator, tokensAmountValidator} from "@/utils/validators";
 import SubmitButton from "@/components/buttons/SubmitButton";
 
@@ -11,7 +11,6 @@ interface SendFormData {
 }
 
 export default function SendERC20Tokens ({
-    walletPrivateKey,
     contractInstance,
     balance,
     tokenDecimalFactor,
@@ -19,8 +18,8 @@ export default function SendERC20Tokens ({
     contractAddress,
     walletAddress,
     setTokensBalance,
+    walletInstance,
 } : {
-    walletPrivateKey: string,
     contractInstance: ethers.Contract,
     balance: string,
     tokenDecimalFactor: string,
@@ -28,8 +27,14 @@ export default function SendERC20Tokens ({
     contractAddress: string,
     walletAddress: string,
     setTokensBalance: (value: string | null) => void,
+    walletInstance: WalletInstance;
 }) {
-    const [progress, setProgress] = useState<{message: string, link?: string}|null>(null)
+    const [progress, setProgress] = useState<{
+        message: string;
+        link?: string;
+        isSuccess?: boolean;
+        isError?: boolean;
+    } | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const {
         register,
@@ -56,11 +61,10 @@ export default function SendERC20Tokens ({
     const onSubmitLogin = async (data: SendFormData) => {
         try {
             setIsLoading(true);
-            await sendTokens({
+            await walletInstance.sendTokensWithContract({
                 contractInstance,
                 setProgress,
                 tokenDecimalFactor,
-                privateKey: walletPrivateKey,
                 toAddress: data.toAddress,
                 amount: data.amount
             })
@@ -68,7 +72,11 @@ export default function SendERC20Tokens ({
             setTokensBalance((await contractInstance.balanceOf(walletAddress)).toString());
         } catch (e) {
             console.log('Error sending tokens: ' + JSON.stringify(e, null, 2));
-            setProgress({message: 'Error sending tokens: ' + JSON.stringify(e, null, 2)});
+            setProgress({
+                message: 'Error sending tokens: ' + JSON.stringify(e, null, 2),
+                isSuccess: false,
+                isError: true
+            });
         }
 
         setIsLoading(false);
@@ -92,7 +100,7 @@ export default function SendERC20Tokens ({
                             }
                             {...register('toAddress', {
                                 required: true,
-                                validate: transferAddressValidator([getAddressFromPrivateKey(walletPrivateKey) as string, contractAddress])
+                                validate: transferAddressValidator([walletInstance.getAddress(), contractAddress])
                             })}
                             onChange={handleChangeAddress}
                         />
@@ -120,12 +128,19 @@ export default function SendERC20Tokens ({
                             onChange={handleChangeAmount}
                         />
                         {errors.amount && <p className="text-red-500 mt-2">
-                            Amount is not valid. Max you have is <b>{convertNativeToETH(balance, tokenDecimalFactor) + ' ' + tokenSymbol}</b>
+                            Amount is not valid. You have <b>{convertNativeToETH(balance, tokenDecimalFactor) + ' ' + tokenSymbol}</b>
                         </p>}
                     </div>
                     <SubmitButton isLoading={isLoading} title="Send"/>
                     {progress?.message &&
-                        <div className="bg-gray-900 border-l-4 border-blue-500 text-blue-700 p-4 mt-4">
+                        <div className={
+                                `bg-gray-900 border-l-4 border-blue-500 text-blue-700 ${
+                                    progress.isSuccess ? 'border-green-500 text-green-700' : ''
+                                } ${
+                                    progress.isError ? 'border-red-500 text-red-500' : ''
+                                } p-4 mt-4`
+                            }
+                        >
                             <p className="mb-2">{progress.message}</p>
                             {progress.link && (
                                 <p>

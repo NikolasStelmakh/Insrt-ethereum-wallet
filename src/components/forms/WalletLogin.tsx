@@ -2,7 +2,7 @@ import React, {ChangeEvent} from "react";
 import {useRouter} from "next/navigation";
 import {useForm} from "react-hook-form";
 import {STORED_ETH_WALLET_PRIVATE_KEY_NAME} from "@/utils/localstorage";
-import {ethereumPrivateKeyValidator} from "@/utils/ethers";
+import {ethereumPrivateKeyValidator} from "@/utils/validators";
 
 interface PrivateKeyFormData {
     privateKey: string;

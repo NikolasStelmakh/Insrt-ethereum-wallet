@@ -1,5 +1,13 @@
-import {isValidAddress} from "ethereumjs-util";
+import {isValidAddress, isValidPrivate} from "ethereumjs-util";
 import {evaluate} from "mathjs";
+
+export const ethereumPrivateKeyValidator = (value: string): boolean => {
+    try {
+        return isValidPrivate(Buffer.from(value, 'hex'));
+    } catch (error) {
+        return false;
+    }
+};
 
 export const ethereumAddressValidator = (value: string): boolean => {
     try {
